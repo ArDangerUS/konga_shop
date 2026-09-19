@@ -1,5 +1,10 @@
 # Handoff: Konga Kratom – landing page (CZ)
 
+> **Produkční web je hotový: `index.html` (statické HTML, bez runtime).**
+> Nasazení na GitHub Pages a napojení formuláře na Telegram: **[DEPLOY.md](DEPLOY.md)**.
+> Soubory `Konga Kratom.dc.html`, `support.js` a `ios-frame.jsx` zůstávají jen jako
+> designová reference – na webu se nepoužívají.
+
 ## Overview
 Jednostránkový prodejní landing pro Konga Kratom (Praha, Nuselská 31). Cíl: konverze z placené reklamy do formuláře „jméno + telefon“ s hookem **sleva na první objednávku (výchozí 15 %), zavoláme do 30 minut**. Sekundárně SEO / AI-search viditelnost (JSON-LD, FAQ, sémantické nadpisy). Jazyk výhradně čeština. Primární zařízení: mobil.
 
@@ -87,6 +92,17 @@ Veškeré texty (produkty, 5 bodů, lab seznam, checklist, FAQ) jsou v `Konga Kr
 Telefon +420 000 000 000, e-mail info@konga.cz / b2b@konga.cz, IČO, otevírací doba, ceny produktů, cílový endpoint formuláře, analytické ID.
 
 ## Files
+
+### Produkční web
+- `index.html` – hotový statický landing (šablony `{{ }}` a `<sc-for>` rozgenerované, runtime odstraněn).
+- `assets/config.js` – nastavení odesílání poptávek (endpoint / Telegram token). Jediný soubor k úpravě.
+- `assets/form.js` – validace, odeslání, honeypot, UTM, události pro analytiku.
+- `backend/cloudflare-worker.js`, `backend/google-apps-script.gs` – serverová mezivrstva, aby token bota nebyl veřejný.
+- `.github/workflows/deploy-pages.yml` – automatické nasazení na GitHub Pages.
+- `robots.txt`, `sitemap.xml`, `404.html`, `.nojekyll`.
+
+### Designová reference (nepoužívá se na webu)
 - `Konga Kratom.dc.html` – hlavní návrh (desktop + mobil).
 - `Konga Mobile Preview.dc.html` – náhled v rámečku iPhone (jen pro kontrolu).
+- `support.js`, `ios-frame.jsx` – runtime prototypu.
 - `assets/konga-logo.jpg`.
