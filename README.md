@@ -4,6 +4,12 @@
 > Nasazení na GitHub Pages a napojení formuláře na Telegram: **[DEPLOY.md](DEPLOY.md)**.
 > Soubory `Konga Kratom.dc.html`, `support.js` a `ios-frame.jsx` zůstávají jen jako
 > designová reference – na webu se nepoužívají.
+>
+> **Pozor: produkční `index.html` se od popisu níže liší v jednom bodě –
+> sleva byla na přání klienta odstraněna.** Zmizel offer box v hero sekci,
+> velké „−15 %“ v kontaktu i zmínky slevy v CTA, FAQ a meta popiscích;
+> hookem je nově „zavoláme do 30 minut a poradíme s výběrem“. Popis slevy
+> v kapitolách níže platí jen pro původní návrh.
 
 ## Overview
 Jednostránkový prodejní landing pro Konga Kratom (Praha, Nuselská 31). Cíl: konverze z placené reklamy do formuláře „jméno + telefon“ s hookem **sleva na první objednávku (výchozí 15 %), zavoláme do 30 minut**. Sekundárně SEO / AI-search viditelnost (JSON-LD, FAQ, sémantické nadpisy). Jazyk výhradně čeština. Primární zařízení: mobil.

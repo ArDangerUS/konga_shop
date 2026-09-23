@@ -76,8 +76,7 @@ function buildMessage_(d, name, phone) {
     '🌿 <b>Nová poptávka — Konga Kratom</b>',
     '',
     '👤 <b>Jméno:</b> ' + esc_(name),
-    '📞 <b>Telefon:</b> ' + esc_(phone),
-    '🏷 <b>Sleva:</b> ' + esc_(d.discount || 15) + ' %'
+    '📞 <b>Telefon:</b> ' + esc_(phone)
   ];
   var utm = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']
     .filter(function (k) { return d[k]; })

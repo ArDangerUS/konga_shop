@@ -102,7 +102,6 @@ Settings → Pages → Source: **Deploy from a branch** → ветка `main`, �
 
    👤 Jméno: Jan Novák
    📞 Telefon: +420 777 123 456
-   🏷 Sleva: 15 %
    🎯 Kampaň: source: google · medium: cpc · campaign: kratom-praha
    🌐 https://konga.cz/?utm_source=google...
    🕒 19.09.2026 13:07
@@ -128,10 +127,8 @@ Settings → Pages → Source: **Deploy from a branch** → ветка `main`, �
 - `+420 000 000 000` → реальный телефон (все вхождения: блок контактов, `tel:` в мобильной панели, JSON-LD)
 - `info@konga.cz`, `b2b@konga.cz` → реальные почты
 - `IČO 000 00 000` → реальное IČO
-- цены `290 Kč` / `310 Kč` и `15 %` — если поменяются
+- цены `290 Kč` / `310 Kč` — если поменяются
 - `fallbackPhone` в `assets/config.js`
-
-Скидка `15 %` захардкожена в тексте (SEO), меняется поиском по `15 %` в `index.html`.
 
 ### Аналитика
 

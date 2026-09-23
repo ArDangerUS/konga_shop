@@ -91,7 +91,6 @@ function buildMessage(d, request) {
     '',
     `👤 <b>Jméno:</b> ${esc(d.name)}`,
     `📞 <b>Telefon:</b> ${esc(d.phone)}`,
-    `🏷 <b>Sleva:</b> ${esc(d.discount || 15)} %`,
   ];
 
   const utm = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']

@@ -60,8 +60,7 @@
       '🌿 <b>Nová poptávka — Konga Kratom</b>',
       '',
       '👤 <b>Jméno:</b> ' + esc(d.name),
-      '📞 <b>Telefon:</b> ' + esc(d.phone),
-      '🏷 <b>Sleva:</b> ' + (CFG.discount || 15) + ' %'
+      '📞 <b>Telefon:</b> ' + esc(d.phone)
     ];
     var utm = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']
       .map(function (k) { return d[k] ? k.replace('utm_', '') + ': ' + d[k] : null; })
@@ -150,7 +149,6 @@
     // honeypot: люди это поле не видят, боты заполняют
     if (data.website) { log('honeypot'); showSuccess(data.phone); return; }
 
-    data.discount = CFG.discount || 15;
     data.text = buildMessage(data); // готовый текст для прокси
 
     var err = validate(data);
