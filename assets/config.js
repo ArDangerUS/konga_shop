@@ -27,7 +27,7 @@ window.KONGA_CONFIG = {
   /* --- Контакты для всплывающего баннера ---
      (в index.html телефон и адрес прописаны отдельно — меняй в обоих местах) */
   contact: {
-    priceFrom: 'od 249 Kč',
+    price:     '249 Kč',
     priceUnit: 'za 50 g',
     address:   'Nuselská 31, Praha 4',
     hours:     'Po–Pá 10–19',

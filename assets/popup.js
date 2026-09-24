@@ -17,7 +17,7 @@
   var KEY = 'konga_popup_seen';
 
   var C = CFG.contact || {};
-  var PRICE = C.priceFrom || 'od 249 Kč';
+  var PRICE = C.price || C.priceFrom || '249 Kč';
   var PRICE_UNIT = C.priceUnit || 'za 50 g';
   var ADDRESS = C.address || 'Nuselská 31, Praha 4';
   var HOURS = C.hours || 'Po–Pá 10–19';

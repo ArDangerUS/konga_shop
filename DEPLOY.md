@@ -127,7 +127,7 @@ Settings → Pages → Source: **Deploy from a branch** → ветка `main`, �
 - `+420 000 000 000` → реальный телефон (все вхождения: блок контактов, `tel:` в мобильной панели, JSON-LD)
 - `info@konga.cz`, `b2b@konga.cz` → реальные почты
 - `IČO 000 00 000` → реальное IČO
-- цены `od 249 Kč / 50 g` — в трёх карточках, в JSON-LD и в `contact` в `config.js`
+- цены `249 Kč / 50 g` — в трёх карточках, в JSON-LD и в `contact` в `config.js`
 - `fallbackPhone` в `assets/config.js`
 
 ## Всплывающий баннер при заходе
