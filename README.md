@@ -108,6 +108,8 @@ Telefon +420 000 000 000, e-mail info@konga.cz / b2b@konga.cz, IČO, otevírací
 - `assets/popup.js` – vyskakovací banner při vstupu (cena, kvalita, adresa, telefon, CTA na formulář).
 - `backend/cloudflare-worker.js`, `backend/google-apps-script.gs` – serverová mezivrstva, aby token bota nebyl veřejný.
 - `.github/workflows/deploy-pages.yml` – automatické nasazení na GitHub Pages.
+- `assets/og-image.jpg` – náhled odkazu pro Telegram/WhatsApp/Facebook (1200×630, logo).
+- `tools/` – generátor náhledového obrázku.
 - `robots.txt`, `sitemap.xml`, `404.html`, `.nojekyll`.
 
 ### Designová reference (nepoužívá se na webu)

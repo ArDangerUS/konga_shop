@@ -120,10 +120,25 @@ Settings → Pages → Source: **Deploy from a branch** → ветка `main`, �
 
 ---
 
+## Превью ссылки (Telegram, WhatsApp, Facebook)
+
+Картинка превью — `assets/og-image.jpg` (1200×630, логотип + название + адрес),
+подключена через `og:image` в `index.html`.
+
+Перерисовать её можно скриптом `tools/make-og-image.mjs`
+(`node tools/make-og-image.mjs`) — он рендерит `tools/og-image.html` в Chromium.
+
+**Telegram кэширует превью намертво.** После деплоя старая картинка и старый текст
+будут висеть ещё долго. Сбросить: написать боту
+[@WebpageBot](https://t.me/WebpageBot) команду `/start`, потом отправить ему ссылку —
+он обновит кэш. Для Facebook — [Sharing Debugger](https://developers.facebook.com/tools/debug/),
+кнопка *Scrape Again*.
+
 ## Что ещё заполнить перед рекламой
 
 Плейсхолдеры из макета остались в `index.html` — найди и замени:
 
+- адрес превью `https://ardangerus.github.io/konga_shop/` в `og:image`, `og:url`, `canonical` — при переезде на свой домен
 - `+420 000 000 000` → реальный телефон (все вхождения: блок контактов, `tel:` в мобильной панели, JSON-LD)
 - `info@konga.cz`, `b2b@konga.cz` → реальные почты
 - `IČO 000 00 000` → реальное IČO
