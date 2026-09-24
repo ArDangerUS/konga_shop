@@ -9,7 +9,9 @@
 > sleva byla na přání klienta odstraněna.** Zmizel offer box v hero sekci,
 > velké „−15 %“ v kontaktu i zmínky slevy v CTA, FAQ a meta popiscích;
 > hookem je nově „zavoláme do 30 minut a poradíme s výběrem“. Popis slevy
-> v kapitolách níže platí jen pro původní návrh.
+> v kapitolách níže platí jen pro původní návrh. Ceny jsou nově jednotné
+> `od 249 Kč / 50 g` a přibyl vyskakovací banner při vstupu
+> (`assets/popup.js`, tři varianty, nastavení v `assets/config.js`).
 
 ## Overview
 Jednostránkový prodejní landing pro Konga Kratom (Praha, Nuselská 31). Cíl: konverze z placené reklamy do formuláře „jméno + telefon“ s hookem **sleva na první objednávku (výchozí 15 %), zavoláme do 30 minut**. Sekundárně SEO / AI-search viditelnost (JSON-LD, FAQ, sémantické nadpisy). Jazyk výhradně čeština. Primární zařízení: mobil.
@@ -103,6 +105,7 @@ Telefon +420 000 000 000, e-mail info@konga.cz / b2b@konga.cz, IČO, otevírací
 - `index.html` – hotový statický landing (šablony `{{ }}` a `<sc-for>` rozgenerované, runtime odstraněn).
 - `assets/config.js` – nastavení odesílání poptávek (endpoint / Telegram token). Jediný soubor k úpravě.
 - `assets/form.js` – validace, odeslání, honeypot, UTM, události pro analytiku.
+- `assets/popup.js` – vyskakovací banner při vstupu (cena, kvalita, adresa, telefon, CTA na formulář).
 - `backend/cloudflare-worker.js`, `backend/google-apps-script.gs` – serverová mezivrstva, aby token bota nebyl veřejný.
 - `.github/workflows/deploy-pages.yml` – automatické nasazení na GitHub Pages.
 - `robots.txt`, `sitemap.xml`, `404.html`, `.nojekyll`.
