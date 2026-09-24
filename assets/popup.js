@@ -13,8 +13,13 @@
 
   var VARIANT = P.variant || 'sheet';
   var DELAY = P.delay == null ? 1200 : P.delay;
-  var REPEAT_H = P.repeatAfterHours == null ? 24 : P.repeatAfterHours;
   var KEY = 'konga_popup_seen';
+
+  /* Как часто показывать. 'session' — раз за сеанс браузера, 'always' — каждый
+     раз, число — столько часов не показывать. repeatAfterHours — старое имя. */
+  var MODE = P.showAgain != null ? P.showAgain
+           : P.repeatAfterHours != null ? P.repeatAfterHours
+           : 'session';
 
   var C = CFG.contact || {};
   var PRICE = C.price || C.priceFrom || '249 Kč';
@@ -30,16 +35,23 @@
     'Licencovaný producent z Indonésie'
   ];
 
-  /* ---------- показывали ли уже ---------- */
+  /* ---------- показывали ли уже ----------
+     Любое обращение к storage в try/catch: в приватном режиме и при
+     заблокированных данных сайта он бросает исключение. Тогда просто
+     показываем баннер — это безопаснее, чем упасть. */
   function alreadySeen() {
-    if (!REPEAT_H) return false;
+    if (MODE === 'always' || MODE === 0) return false;
     try {
+      if (MODE === 'session') return sessionStorage.getItem(KEY) === '1';
       var t = parseInt(localStorage.getItem(KEY), 10);
-      return t && Date.now() - t < REPEAT_H * 3600 * 1000;
-    } catch (e) { return false; }   // приватный режим / storage заблокирован
+      return !!t && Date.now() - t < MODE * 3600 * 1000;
+    } catch (e) { return false; }
   }
   function remember() {
-    try { localStorage.setItem(KEY, String(Date.now())); } catch (e) {}
+    try {
+      if (MODE === 'session') sessionStorage.setItem(KEY, '1');
+      else if (MODE !== 'always' && MODE !== 0) localStorage.setItem(KEY, String(Date.now()));
+    } catch (e) {}
   }
 
   function track(name) {
