@@ -55,6 +55,26 @@
 Папку `functions/` Cloudflare подхватывает из корня репозитория сам —
 настраивать её не надо.
 
+### 2б. Если Cloudflare предложил Worker, а не Pages
+
+В новом интерфейсе Cloudflare сборка из Git часто создаётся как **Worker**
+(в настройках видно поле *Deploy command*). Это тоже рабочий вариант,
+репозиторий к нему готов — есть `wrangler.toml` и `src/worker.js`.
+Настройки тогда такие:
+
+| Поле | Значение |
+|---|---|
+| Build command | `bash tools/build-site.sh` |
+| Deploy command | `npx wrangler deploy` |
+| Root directory | `/` |
+
+Статику отдаёт биндинг `ASSETS` из `_site`, а `/api/lead` обрабатывает
+`src/worker.js`. Логика приёма заявок общая с Pages — лежит
+в `src/lead-handler.js`, дублей нет.
+
+Домен в этом случае подключается там же: **Worker → Settings → Domains &
+Routes → Add → Custom domain**.
+
 ### 3. Вписать токен бота
 
 **Settings → Variables and Secrets** →окружение **Production** → Add:
@@ -376,7 +396,9 @@ popup: {
 | `index.html` | сам лендинг (боевой, без рантайма макета) |
 | `assets/config.js` | **единственное, что нужно править** для приёма заявок |
 | `assets/form.js` | валидация, отправка, honeypot, UTM, события аналитики |
-| `functions/api/lead.js` | приём заявок на Cloudflare Pages (путь 1) |
+| `src/lead-handler.js` | приём заявки и отправка в Telegram — общее ядро |
+| `src/worker.js` + `wrangler.toml` | точка входа для Cloudflare Workers (`npx wrangler deploy`) |
+| `functions/api/lead.js` | то же самое для Cloudflare Pages |
 | `backend/cloudflare-worker.js` | отдельный воркер для GitHub Pages (путь 2) |
 | `backend/google-apps-script.gs` | прослойка Google (путь 3) |
 | `tools/build-site.sh` | сборка статики в `_site/`, общая для Pages и Actions |

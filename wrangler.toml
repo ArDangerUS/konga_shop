@@ -1,0 +1,12 @@
+# Конфиг для Cloudflare Workers (Build command: bash tools/build-site.sh,
+# Deploy command: npx wrangler deploy).
+# Статика собирается в _site/, её отдаёт биндинг ASSETS.
+# Секреты BOT_TOKEN и CHAT_ID задаются в панели, в этот файл их не писать.
+name = "konga-shop"
+main = "src/worker.js"
+compatibility_date = "2026-09-01"
+
+[assets]
+directory = "./_site"
+binding = "ASSETS"
+not_found_handling = "404-page"
