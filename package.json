@@ -1,0 +1,13 @@
+{
+  "name": "konga-shop",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bash tools/build-site.sh",
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

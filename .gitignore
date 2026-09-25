@@ -1,2 +1,4 @@
 .og-cache/
 _site/
+node_modules/
+.wrangler/

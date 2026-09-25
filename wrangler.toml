@@ -4,7 +4,7 @@
 # Секреты BOT_TOKEN и CHAT_ID задаются в панели, в этот файл их не писать.
 name = "konga-shop"
 main = "src/worker.js"
-compatibility_date = "2026-09-01"
+compatibility_date = "2025-01-01"
 
 [assets]
 directory = "./_site"
