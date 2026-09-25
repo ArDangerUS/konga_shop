@@ -1,9 +1,22 @@
-# Деплой на GitHub Pages + заявки в Telegram
+# Деплой сайта + заявки в Telegram
 
-Сайт — статика: `index.html` + `assets/`. Никакого билда, никакого сервера.
+Сайт — статика: `index.html` + `assets/`. Сборки нет.
 Заявка с формы уходит в Telegram-бота.
 
----
+> ## Главное про токен
+>
+> GitHub Pages — **только статика, сервера нет**. Всё, что лежит в репозитории,
+> отдаётся браузеру как есть. Если вписать токен бота в `assets/config.js`,
+> его увидит любой, кто откроет исходник страницы: сможет писать от имени бота,
+> читать ваши заявки и удалять сообщения. А для бесплатного Pages репозиторий
+> ещё и должен быть публичным.
+>
+> Поэтому токен живёт **не в коде**, а в настройках хостинга — как секретная
+> переменная. Ниже два способа, оба бесплатные и без карты.
+>
+> Если токен всё-таки попал в репозиторий — отозвать у @BotFather
+> командой `/revoke` и выпустить новый. Удалить файл недостаточно:
+> токен остаётся в истории git.
 
 ## Шаг 1. Создать бота и узнать chat_id
 
@@ -18,79 +31,105 @@
 
 ---
 
-## Шаг 2. Куда шлём заявку — выбери один вариант
+## Шаг 2. Выбрать, где живёт сайт
 
-### Вариант A (рекомендую): Cloudflare Worker — токен спрятан
+### Путь 1 (рекомендую): Cloudflare Pages — сайт, бэкенд и домен в одном месте
 
-GitHub Pages — статика, кода на сервере нет. Чтобы токен бота не лежал открыто
-в исходниках страницы, отправку делает бесплатный воркер-прослойка.
+Бесплатно, без карты. Сайт статический, а рядом работает маленькая функция
+`functions/api/lead.js`, которая знает токен и шлёт заявки в Telegram.
+Она на том же домене, поэтому никакого CORS и никаких лишних настроек.
 
-1. [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages** → **Create** → **Worker** → назови, например, `konga-leads` → **Deploy**.
-2. **Edit code** → удали всё → вставь содержимое [`backend/cloudflare-worker.js`](backend/cloudflare-worker.js) → **Deploy**.
-3. **Settings → Variables and Secrets** → добавь:
+1. [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages** →
+   **Create** → вкладка **Pages** → **Connect to Git** → выбрать репозиторий
+   `konga_shop` и ветку.
+2. Настройки сборки:
+   - **Framework preset:** None
+   - **Build command:** `bash tools/build-site.sh`
+   - **Build output directory:** `_site`
+3. **Save and Deploy**. Получится адрес вида `konga-shop.pages.dev`.
+4. **Settings → Variables and Secrets** → добавить для Production:
 
    | Имя | Тип | Значение |
    |---|---|---|
-   | `BOT_TOKEN` | Secret | токен от BotFather |
-   | `CHAT_ID` | Secret | id чата из шага 1 |
+   | `BOT_TOKEN` | Secret | токен от @BotFather |
+   | `CHAT_ID` | Secret | id чатов через запятую, например `111,222` |
+
+5. Пересобрать (**Deployments → Retry deployment**) — переменные подхватываются
+   при сборке.
+6. В `assets/config.js` оставить:
+
+   ```js
+   endpoint: '/api/lead',
+   ```
+
+Каждый пуш в ветку пересобирает сайт сам.
+
+### Путь 2: остаться на GitHub Pages + отдельный Cloudflare Worker
+
+Если сайт уже на Pages и переезжать не хочется. Разница одна: прослойка живёт
+отдельно, на своём адресе, поэтому нужен список разрешённых доменов.
+
+1. **Workers & Pages** → **Create** → **Worker** → назвать `konga-leads` → **Deploy**.
+2. **Edit code** → вставить содержимое [`backend/cloudflare-worker.js`](backend/cloudflare-worker.js) → **Deploy**.
+3. **Settings → Variables and Secrets**:
+
+   | Имя | Тип | Значение |
+   |---|---|---|
+   | `BOT_TOKEN` | Secret | токен от @BotFather |
+   | `CHAT_ID` | Secret | id чатов через запятую |
    | `ALLOWED_ORIGINS` | Text | `https://ardangerus.github.io,https://konga.cz` |
 
-4. Ещё раз **Deploy**. Скопируй URL воркера (`https://konga-leads.<аккаунт>.workers.dev`).
-5. Впиши его в `assets/config.js`:
+4. Скопировать адрес воркера в `assets/config.js`:
 
    ```js
    endpoint: 'https://konga-leads.твой-аккаунт.workers.dev',
    ```
 
-Бесплатный тариф — 100 000 запросов в сутки, для лендинга с головой.
+Сам сайт включается в Settings → Pages → Source: **GitHub Actions**
+(workflow `.github/workflows/deploy-pages.yml` уже в репозитории).
 
-### Вариант A2: Google Apps Script — то же самое, если не хочешь Cloudflare
+### Путь 3: Google Apps Script — если не хочешь Cloudflare вообще
 
 Код в [`backend/google-apps-script.gs`](backend/google-apps-script.gs), инструкция —
-в комментарии в начале файла. Бонус: может параллельно писать заявки
-в Google-таблицу (переменная `SHEET_ID`). Полученный `.../exec` URL — тоже в `endpoint`.
+в комментарии в начале файла. Нужен только Google-аккаунт. Бонус: умеет писать
+заявки ещё и в Google-таблицу (переменная `SHEET_ID`). Полученный `.../exec` URL
+идёт в `endpoint`.
 
-### Вариант B: напрямую в Telegram, без прослойки
-
-Быстрее всего, но **токен бота будет виден любому**, кто откроет исходник страницы:
-чужие смогут писать от имени бота и читать переписку. Годится, чтобы проверить
-за 5 минут, дальше лучше перейти на вариант A.
+### Чего делать не надо: токен прямо в config.js
 
 ```js
-endpoint: '',
-telegram: { botToken: '8123456789:AAH...', chatId: '123456789' },
+telegram: { botToken: '8123...', chatId: '111,222' }   // так не надо
 ```
 
-Если токен всё-таки утёк — отзови его у @BotFather (`/revoke`) и выпусти новый.
+Работает, но токен виден всем. Годится только чтобы проверить за пять минут
+на локальном файле, и то лучше не коммитить.
 
----
+## Шаг 3. Подвязать домен
 
-## Шаг 3. Включить GitHub Pages
+### На Cloudflare Pages (путь 1)
 
-1. Смёржить ветку `claude/cool-darwin-13xn0e` в `main`.
-2. Repo → **Settings** → **Pages** → **Build and deployment** → Source: **GitHub Actions**.
-3. Готово. Workflow `.github/workflows/deploy-pages.yml` соберёт и выложит сайт при
-   каждом пуше в `main`. Статус — во вкладке **Actions**.
+1. Проект → **Custom domains** → **Set up a domain** → ввести `konga.cz`.
+2. Если домен уже в Cloudflare — записи создадутся сами, останется подтвердить.
+   Если у другого регистратора — Cloudflare покажет, какой `CNAME` прописать,
+   либо предложит перевести к себе NS-записи (бесплатно и проще).
+3. Так же добавить `www.konga.cz` — Cloudflare сам сделает редирект.
 
-Адрес: **https://ardangerus.github.io/konga_shop/**
+HTTPS-сертификат выпускается автоматически, минут за 10–15.
 
-<details>
-<summary>Альтернатива без Actions</summary>
+### На GitHub Pages (путь 2)
 
-Settings → Pages → Source: **Deploy from a branch** → ветка `main`, папка `/ (root)`.
-Тогда файл `.github/workflows/deploy-pages.yml` можно удалить.
-</details>
-
-### Свой домен (konga.cz)
-
-1. У регистратора домена: `A`-записи на `185.199.108.153`, `185.199.109.153`,
-   `185.199.110.153`, `185.199.111.153`, плюс `CNAME` для `www` → `ardangerus.github.io`.
+1. У регистратора домена — `A`-записи на `185.199.108.153`, `185.199.109.153`,
+   `185.199.110.153`, `185.199.111.153`; для `www` — `CNAME` на `ardangerus.github.io`.
 2. Settings → Pages → **Custom domain** → `konga.cz` → включить **Enforce HTTPS**.
-3. В репозитории заменить адрес `https://ardangerus.github.io/konga_shop/` на `https://konga.cz/`
-   в `index.html` (canonical + og:url), `robots.txt`, `sitemap.xml`, `404.html`
-   и добавить домен в `ALLOWED_ORIGINS` воркера.
+   GitHub создаст в репозитории файл `CNAME` — его не удалять.
 
----
+### После переезда на домен — в обоих случаях
+
+Заменить `https://ardangerus.github.io/konga_shop/` на `https://konga.cz/` в:
+
+- `index.html` — `canonical`, `og:url`, `og:image`
+- `robots.txt`, `sitemap.xml`, `404.html`
+- `ALLOWED_ORIGINS` воркера (только путь 2)
 
 ## Шаг 4. Проверить
 
@@ -112,8 +151,10 @@ Settings → Pages → Source: **Deploy from a branch** → ветка `main`, �
 
 | Что видно | Причина |
 |---|---|
-| `CORS` / `origin_not_allowed` | домен сайта не добавлен в `ALLOWED_ORIGINS` воркера |
-| `telegram_failed`, `chat not found` | неверный `CHAT_ID`, или боту не написали первым |
+| `CORS` / `origin_not_allowed` | домен сайта не добавлен в `ALLOWED_ORIGINS` воркера (путь 2) |
+| `404` на `/api/lead` | на Cloudflare Pages не подхватилась папка `functions/` — проверь, что Build output = `_site`, а `functions/` лежит в корне репозитория |
+| `telegram_failed`, `chat not found` | неверный `CHAT_ID`, или получатель не написал боту первым |
+| заявка пришла только одному | второй получатель не нажал `/start` у бота либо заблокировал его; в логах видно, кому не ушло |
 | `401 Unauthorized` | неверный `BOT_TOKEN` |
 | `not_configured` | не заданы переменные в Cloudflare / Apps Script |
 | ничего не происходит | пустой `endpoint` и пустой `telegram` в `config.js` |
@@ -206,8 +247,10 @@ popup: {
 | `index.html` | сам лендинг (боевой, без рантайма макета) |
 | `assets/config.js` | **единственное, что нужно править** для приёма заявок |
 | `assets/form.js` | валидация, отправка, honeypot, UTM, события аналитики |
-| `backend/cloudflare-worker.js` | прослойка Cloudflare (вариант A) |
-| `backend/google-apps-script.gs` | прослойка Google (вариант A2) |
-| `.github/workflows/deploy-pages.yml` | автодеплой на Pages |
+| `functions/api/lead.js` | приём заявок на Cloudflare Pages (путь 1) |
+| `backend/cloudflare-worker.js` | отдельный воркер для GitHub Pages (путь 2) |
+| `backend/google-apps-script.gs` | прослойка Google (путь 3) |
+| `tools/build-site.sh` | сборка статики в `_site/`, общая для Pages и Actions |
+| `.github/workflows/deploy-pages.yml` | автодеплой на GitHub Pages |
 | `robots.txt`, `sitemap.xml`, `404.html` | SEO и страница 404 |
 | `Konga Kratom.dc.html`, `support.js`, `ios-frame.jsx` | исходный дизайн-макет, на сайте не используется |

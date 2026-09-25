@@ -99,30 +99,44 @@
     });
   }
 
-  /* Прямая отправка в Telegram. urlencoded — тоже без preflight. */
+  /* Прямая отправка в Telegram. urlencoded — тоже без preflight.
+     chatId может быть строкой, строкой через запятую или массивом. */
+  function chatIds(v) {
+    if (Array.isArray(v)) return v;
+    return String(v || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+
   function sendToTelegram(d) {
     var tg = CFG.telegram || {};
-    var body = new URLSearchParams({
-      chat_id: tg.chatId,
-      text: buildMessage(d),
-      parse_mode: 'HTML',
-      disable_web_page_preview: 'true'
-    });
-    var opts = withTimeout(12000);
-    opts.method = 'POST';
-    opts.body = body;
-    return fetch('https://api.telegram.org/bot' + tg.botToken + '/sendMessage', opts)
-      .then(function (r) { return r.json(); })
-      .then(function (j) {
-        log('telegram odpověď:', j);
-        if (!j.ok) throw new Error('telegram: ' + (j.description || 'neznámá chyba'));
-        return true;
+    var text = buildMessage(d);
+    var ids = chatIds(tg.chatId);
+
+    return Promise.all(ids.map(function (id) {
+      var body = new URLSearchParams({
+        chat_id: id,
+        text: text,
+        parse_mode: 'HTML',
+        disable_web_page_preview: 'true'
       });
+      var opts = withTimeout(12000);
+      opts.method = 'POST';
+      opts.body = body;
+      return fetch('https://api.telegram.org/bot' + tg.botToken + '/sendMessage', opts)
+        .then(function (r) { return r.json(); })
+        .catch(function (e) { return { ok: false, description: String(e) }; });
+    })).then(function (list) {
+      log('telegram odpovědi:', list);
+      // хотя бы один получатель — считаем отправленным
+      if (!list.some(function (j) { return j && j.ok; })) {
+        throw new Error('telegram: ' + ((list[0] && list[0].description) || 'neznámá chyba'));
+      }
+      return true;
+    });
   }
 
   function send(d) {
     if (CFG.endpoint) return sendToEndpoint(d);
-    if (CFG.telegram && CFG.telegram.botToken && CFG.telegram.chatId) return sendToTelegram(d);
+    if (CFG.telegram && CFG.telegram.botToken && chatIds(CFG.telegram.chatId).length) return sendToTelegram(d);
     return Promise.reject(new Error('Formulář není nakonfigurován (assets/config.js).'));
   }
 

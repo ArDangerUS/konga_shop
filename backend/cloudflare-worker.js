@@ -4,7 +4,8 @@
  *
  * Переменные окружения (Settings → Variables and Secrets):
  *   BOT_TOKEN        (Secret) — токен от @BotFather
- *   CHAT_ID          (Secret) — id чата/группы, куда падают заявки
+ *   CHAT_ID          (Secret) — id чата, куда падают заявки. Несколько —
+ *                               через запятую: 111111111,222222222
  *   ALLOWED_ORIGINS  (Text)   — через запятую, например:
  *                               https://ardangerus.github.io,https://konga.cz
  *
@@ -57,25 +58,32 @@ export default {
 
     const text = buildMessage({ ...data, name, phone }, request);
 
-    const tg = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: env.CHAT_ID,
-        text,
-        parse_mode: 'HTML',
-        disable_web_page_preview: true,
-      }),
+    const chatIds = String(env.CHAT_ID).split(',').map((s) => s.trim()).filter(Boolean);
+    const results = await Promise.all(chatIds.map((id) => sendTelegram(env.BOT_TOKEN, id, text)));
+
+    const delivered = results.filter((r) => r.ok).length;
+    results.forEach((r, i) => {
+      if (!r.ok) console.log('telegram error for', chatIds[i], JSON.stringify(r));
     });
 
-    const result = await tg.json().catch(() => ({ ok: false }));
-    if (!result.ok) {
-      console.log('telegram error', JSON.stringify(result));
-      return json({ ok: false, error: 'telegram_failed' }, 502, cors);
-    }
-    return json({ ok: true }, 200, cors);
+    // хотя бы один получатель — заявка не потеряна, посетителю показываем успех
+    if (!delivered) return json({ ok: false, error: 'telegram_failed' }, 502, cors);
+    return json({ ok: true, delivered, of: chatIds.length }, 200, cors);
   },
 };
+
+async function sendTelegram(token, chatId, text) {
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', disable_web_page_preview: true }),
+    });
+    return await r.json();
+  } catch (e) {
+    return { ok: false, description: String(e) };
+  }
+}
 
 function clean(v, max) {
   return String(v == null ? '' : v).trim().slice(0, max);

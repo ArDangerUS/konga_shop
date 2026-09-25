@@ -6,7 +6,7 @@
  *  1. script.google.com → New project → вставить этот код.
  *  2. Project Settings → Script properties → добавить:
  *        BOT_TOKEN  = токен от @BotFather
- *        CHAT_ID    = id чата, куда падают заявки
+ *        CHAT_ID    = id чата. Несколько — через запятую: 111111111,222222222
  *        SHEET_ID   = (необязательно) id Google-таблицы для журнала заявок
  *  3. Deploy → New deployment → type: Web app
  *        Execute as: Me
@@ -37,23 +37,30 @@ function doPost(e) {
 
     var text = buildMessage_(data, name, phone);
 
-    var res = UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
-      method: 'post',
-      contentType: 'application/json',
-      payload: JSON.stringify({
-        chat_id: chatId,
-        text: text,
-        parse_mode: 'HTML',
-        disable_web_page_preview: true
-      }),
-      muteHttpExceptions: true
+    var ids = String(chatId).split(',').map(function (v) { return v.trim(); }).filter(String);
+    var delivered = 0, lastError = '';
+    ids.forEach(function (id) {
+      var res = UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
+        method: 'post',
+        contentType: 'application/json',
+        payload: JSON.stringify({
+          chat_id: id,
+          text: text,
+          parse_mode: 'HTML',
+          disable_web_page_preview: true
+        }),
+        muteHttpExceptions: true
+      });
+      var body = JSON.parse(res.getContentText());
+      if (body.ok) delivered++;
+      else { lastError = body.description; console.log('telegram error for ' + id + ': ' + body.description); }
     });
 
-    var body = JSON.parse(res.getContentText());
-    if (!body.ok) return out({ ok: false, error: 'telegram_failed', description: body.description });
+    // хотя бы один получатель — заявка не потеряна
+    if (!delivered) return out({ ok: false, error: 'telegram_failed', description: lastError });
 
     logToSheet_(props.getProperty('SHEET_ID'), name, phone, data);
-    return out({ ok: true });
+    return out({ ok: true, delivered: delivered, of: ids.length });
   } catch (err) {
     return out({ ok: false, error: String(err) });
   }
