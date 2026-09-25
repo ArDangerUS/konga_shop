@@ -77,7 +77,18 @@ Routes → Add → Custom domain**.
 
 ### 3. Вписать токен бота
 
-**Settings → Variables and Secrets** →окружение **Production** → Add:
+> **Осторожно: в Workers два разных списка переменных.**
+>
+> *Build variables and secrets* — видны только во время сборки, работающему
+> воркеру они недоступны.
+>
+> *Variables and Secrets* — переменные самого воркера, именно их читает код
+> через `env.BOT_TOKEN`. Токен нужен здесь.
+>
+> Если положить токен только в build-переменные, форма будет отвечать
+> `not_configured`.
+
+**Settings → Variables and Secrets** → окружение **Production** → Add:
 
 | Имя | Тип | Значение |
 |---|---|---|
