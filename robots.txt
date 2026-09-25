@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ardangerus.github.io/konga_shop/sitemap.xml
+Sitemap: https://konga.cz/sitemap.xml

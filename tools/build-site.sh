@@ -8,6 +8,8 @@ rm -rf _site
 mkdir -p _site
 cp index.html 404.html robots.txt sitemap.xml .nojekyll _site/
 cp -r assets _site/assets
+# CNAME нужен только для GitHub Pages со своим доменом; если файла нет — пропускаем
+[ -f CNAME ] && cp CNAME _site/ || true
 
 echo "_site готов:"
 find _site -type f | sed 's#^_site#  #'
