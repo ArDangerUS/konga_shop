@@ -123,12 +123,41 @@ HTTPS-сертификат выпускается автоматически, м
 2. Settings → Pages → **Custom domain** → `konga.cz` → включить **Enforce HTTPS**.
    GitHub создаст в репозитории файл `CNAME` — его не удалять.
 
+### Домен куплен у Forpsi — что делать там
+
+Самый простой путь — отдать DNS Cloudflare, тогда Pages подключит домен сам
+и корень домена (без www) заработает без плясок.
+
+1. Cloudflare → **Add a site** → ввести домен → тариф **Free**.
+   Cloudflare просканирует записи и выдаст два своих NS-сервера
+   вида `xxx.ns.cloudflare.com`.
+2. [admin.forpsi.com](https://admin.forpsi.com) → домен → раздел смены
+   NS-серверов (не DNS-записей) → вписать те два адреса, сохранить.
+3. Подождать. Обычно 15–60 минут, изредка до суток.
+4. Cloudflare Pages → проект → **Custom domains** → добавить `konga.cz`
+   и `www.konga.cz`. Сертификат выпустится сам.
+
+Без смены NS тоже можно, но с оговоркой: в DNS Forpsi надо добавить
+`CNAME www → <проект>.pages.dev`, а для корня домена обычный CNAME
+стандартом не разрешён — нужна поддержка ALIAS/ANAME. Есть ли она
+у Forpsi, зависит от тарифа; если нет, корень домена работать не будет.
+Поэтому проще перенести NS.
+
 ### После переезда на домен — в обоих случаях
 
-Заменить `https://ardangerus.github.io/konga_shop/` на `https://konga.cz/` в:
+Прописать домен в коде одной командой:
 
-- `index.html` — `canonical`, `og:url`, `og:image`
-- `robots.txt`, `sitemap.xml`, `404.html`
+```bash
+bash tools/set-domain.sh konga.cz
+```
+
+Скрипт поправит `canonical`, `og:url`, `og:image`, `twitter:image`, JSON-LD,
+`robots.txt`, `sitemap.xml` и ссылку на главную в `404.html`. После этого
+закоммитить и запушить.
+
+Отдельно, руками:
+
+- почта `info@` / `b2b@` в `index.html`, если домен не `konga.cz`
 - `ALLOWED_ORIGINS` воркера (только путь 2)
 
 ## Шаг 4. Проверить
@@ -251,6 +280,7 @@ popup: {
 | `backend/cloudflare-worker.js` | отдельный воркер для GitHub Pages (путь 2) |
 | `backend/google-apps-script.gs` | прослойка Google (путь 3) |
 | `tools/build-site.sh` | сборка статики в `_site/`, общая для Pages и Actions |
+| `tools/set-domain.sh` | прописать боевой домен во всех файлах разом |
 | `.github/workflows/deploy-pages.yml` | автодеплой на GitHub Pages |
 | `robots.txt`, `sitemap.xml`, `404.html` | SEO и страница 404 |
 | `Konga Kratom.dc.html`, `support.js`, `ios-frame.jsx` | исходный дизайн-макет, на сайте не используется |
