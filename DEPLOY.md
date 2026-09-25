@@ -18,6 +18,106 @@
 > командой `/revoke` и выпустить новый. Удалить файл недостаточно:
 > токен остаётся в истории git.
 
+## С нуля: Cloudflare Pages + домен konga.cz
+
+Пошаговый порядок. Всё бесплатно, карта не нужна. Занимает ~30 минут плюс
+ожидание DNS.
+
+### 0. Почта — сделать ПЕРВЫМ делом
+
+Сейчас у домена нет MX-записей, значит `info@konga.cz` и `b2b@konga.cz`
+не работают. Если почта нужна, включи её в Forpsi **до** смены NS-серверов:
+панель домена → кнопка **Set to FORPSI mailserver** (`mxavas.forpsi.com`).
+Тогда Cloudflare при подключении домена сам подхватит MX-записи.
+Если сделать потом — придётся добавлять их в Cloudflare руками.
+
+### 1. Аккаунт Cloudflare
+
+[dash.cloudflare.com](https://dash.cloudflare.com) → Sign up → подтвердить почту.
+
+### 2. Создать проект Pages
+
+1. **Workers & Pages** → **Create** → вкладка **Pages** → **Connect to Git**.
+2. Разрешить доступ к репозиторию `konga_shop`, выбрать его.
+3. **Production branch** — ветка, с которой собирать (`main`, если смёржишь,
+   или рабочая ветка как есть).
+4. Настройки сборки:
+
+   | Поле | Значение |
+   |---|---|
+   | Framework preset | None |
+   | Build command | `bash tools/build-site.sh` |
+   | Build output directory | `_site` |
+   | Root directory | оставить пустым |
+
+5. **Save and Deploy**. Через пару минут будет адрес `<проект>.pages.dev`.
+
+Папку `functions/` Cloudflare подхватывает из корня репозитория сам —
+настраивать её не надо.
+
+### 3. Вписать токен бота
+
+**Settings → Variables and Secrets** →окружение **Production** → Add:
+
+| Имя | Тип | Значение |
+|---|---|---|
+| `BOT_TOKEN` | Secret | токен от @BotFather |
+| `CHAT_ID` | Secret | id получателей через запятую, например `111,222` |
+
+Потом **Deployments → последний деплой → Retry deployment** — переменные
+подхватываются только при сборке.
+
+Хочешь, чтобы форма работала и на preview-деплоях веток — добавь те же
+переменные в окружение Preview.
+
+### 4. Проверить, что заявки ходят
+
+Открыть `<проект>.pages.dev`, заполнить форму. В Telegram должно прилететь
+сообщение обоим получателям.
+
+Не пришло — смотри таблицу ошибок в разделе «Шаг 4. Проверить» ниже.
+Чаще всего: получатель не нажал `/start` у бота, поэтому Telegram не даёт
+боту написать первым.
+
+### 5. Подключить домен
+
+1. Cloudflare → **Add a site** (кнопка вверху дашборда) → `konga.cz` → тариф **Free**.
+2. Cloudflare просканирует текущие записи и покажет **два своих NS-сервера**
+   вида `xxx.ns.cloudflare.com`.
+3. [admin.forpsi.com](https://admin.forpsi.com) → домен `konga.cz` → раздел смены
+   **NS-серверов** (не DNS-записей!) → вписать эти два адреса, сохранить.
+4. Ждать. Обычно 15–60 минут, изредка до суток. Cloudflare пришлёт письмо,
+   когда домен станет Active.
+5. В Cloudflare → **DNS** удалить лишнее, что осталось от Forpsi:
+   - `A konga.cz → 81.2.196.19` (парковка Forpsi)
+   - `CNAME *.konga.cz → konga.cz` (лишний wildcard)
+
+   MX-записи, если ты включил почту на шаге 0, **не трогать**.
+6. Pages → проект → **Custom domains** → **Set up a domain** → `konga.cz`.
+   Повторить для `www.konga.cz`. Записи Cloudflare создаст сам,
+   сертификат выпустит сам (10–15 минут).
+
+### 6. После того как домен заработал
+
+1. Проверить, что `https://konga.cz` открывается и форма шлёт заявки.
+2. Сбросить кэш превью ссылки: боту [@WebpageBot](https://t.me/WebpageBot)
+   команда `/start`, потом отправить ему `https://konga.cz`.
+3. GitHub Pages можно выключить, чтобы не было копии сайта:
+   Settings → Pages → Source → **None**. Файл
+   `.github/workflows/deploy-pages.yml` тогда просто не нужен.
+
+### Что где лежит после настройки
+
+| Что | Где |
+|---|---|
+| код сайта | GitHub, репозиторий `konga_shop` |
+| сборка и хостинг | Cloudflare Pages, пересобирает при каждом пуше |
+| токен бота | Cloudflare Pages → Variables and Secrets |
+| DNS домена | Cloudflare (домен куплен в Forpsi, там только NS) |
+| почта | Forpsi (`mxavas.forpsi.com`), MX-записи живут в Cloudflare |
+
+---
+
 ## Шаг 1. Создать бота и узнать chat_id
 
 1. В Telegram напиши [@BotFather](https://t.me/BotFather) → `/newbot` → придумай имя.
